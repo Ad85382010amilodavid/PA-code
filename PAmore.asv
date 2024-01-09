@@ -1,0 +1,205 @@
+A = 5; % Recruitment rate
+mu = 0.04; % Natural death coefficient
+d = 0.03; % Death from PA
+beta_1 = 0.99; % Transmission infectivity rate in hospitals
+beta_2 = 0.99; % Transmission infectivity rate in community
+r_1 = 0.3; % Rate at which recovered return to susceptibles in the community
+r_2 = 0.1; % Rate at which recovered return to susceptibles in the hospital
+e_1 = 0.3; % A_1 recovery rate
+e_2 = 0.3; % A_2 recovery rate
+c_1 = 0.5; % Rate at which infected in the community receive A_1 treatment
+c_2 = 0.5; % Rate at which infected in the hospital receive A_2 treatment
+s_1 = 0.5; % Rate at which infected in the community receive A_2 treatment
+s_2 = 0.5; % Rate at which infected in the hospital receive A_1 treatment
+z = 0.06; % Rate at which susceptible in the hospital move to susceptible in the community
+k_1 = 0.844; % Rate at which patients receiving treatment A_1 go to A_2
+k_2 = 0.677; % Rate at which patients receiving treatment A_2 go to A_1
+gama = 0.05; % Rate at which susceptible in the community move to susceptible in the hospital
+
+fdefun = @(t, y) [
+    A + z * y(2) + r_1 * y(7) - beta_2 * y(3) - mu * y(1) - gama * y(1);
+    gama * y(1) - z * y(2) - mu * y(2) - beta_1 * y(4) + r_2 * y(7);
+    beta_2 * y(3) - (mu + d) * y(3) - c_1 * y(3) - s_1 * y(3);
+    beta_1 * y(4) - (mu + d) * y(4) - c_2 * y(4) - s_2 * y(4);
+    c_1 * y(3) + k_2 * y(6) - k_1 * y(5) - (mu + d) * y(5) + c_2 * y(4);
+    s_1 * y(3) + k_1 * y(5) - k_2 * y(6) - (mu + d) * y(6) + s_2 * y(4);
+    e_1 * y(5) + e_2 * y(6) - r_1 * y(7) - r_2 * y(7) - mu * y(7)
+];
+
+alpha1 = 0.4;
+alpha = 0.6;
+alpha2 = 0.8;
+t0 = 0;
+tfinal = 50;
+y0 = [7656; 3828; 336; 672; 676; 676; 1072];
+h = 2^(-6);
+
+[t1, y_fde121] = fde12(alpha1, fdefun, t0, tfinal, y0, h);
+[t, y_fde12] = fde12(alpha, fdefun, t0, tfinal, y0, h);
+[t2, y_fde122] = fde12(alpha2, fdefun, t0, tfinal, y0, h);
+
+% Figure 1: Population Dynamics
+figure(1)
+plot(t, y_fde121(1,:), 'o-b', t, y_fde12(1,:), 'b', t, y_fde122(1,:), '--b', t, y_fde121(2,:), 'o-m', t, y_fde12(2,:), 'm', t, y_fde122(2,:), '--m', t, y_fde121(3,:), 'o-y', t, y_fde12(3,:), 'y', t, y_fde122(3,:), '--y', t, y_fde121(4,:), 'o-r', t, y_fde12(4,:), 'r', t, y_fde122(4,:), '--r', t, y_fde121(5,:), 'o-g', t, y_fde12(5,:), 'g', t, y_fde122(5,:), '--g', t, y_fde121(6,:), 'o-k', t, y_fde12(6,:), 'k', t, y_fde122(6,:), '-k', t, y_fde121(7,:), 'o-c', t, y_fde12(7,:), 'c', t, y_fde122(7,:), '--c');
+legend('S_C(t) \alpha=0.4', 'S_C(t) \alpha=0.6', 'S_C(t) \alpha=0.8', 'S_H(t) \alpha=0.4', 'S_H(t) \alpha=0.6', 'S_H(t) \alpha=0.8', 'I_C(t) \alpha=0.4', 'I_C(t) \alpha=0.6', 'I_C(t) \alpha=0.8', 'I_H(t) \alpha=0.4', 'I_H(t) \alpha=0.6', 'I_H(t) \alpha=0.8', 'T_A_1(t) \alpha=0.4', 'T_A_1(t) \alpha=0.6', 'T_A_1(t) \alpha=0.8', 'T_A_2(t) \alpha=0.4', 'T_A_2(t) \alpha=0.6', 'T_A_2(t) \alpha=0.8', 'R(t) \alpha=0.4', 'R(t) \alpha=0.6', 'R(t) \alpha=0.8');
+xlabel('Time (weeks)');
+ylabel('Population');
+
+figure(2)
+plot(t, y_fde121(1,:), '-b', t, y_fde122(1,:), '--b', t, y_fde121(2,:), '-m', t, y_fde122(2,:), '--m', t, y_fde121(3,:), 'o-y' 'y', t, y_fde122(3,:), '--y', t, y_fde121(4,:), 'o-r', t, y_fde12(4,:), 'r', t, y_fde122(4,:), '--r', t, y_fde121(5,:), 'o-g', t, y_fde12(5,:), 'g', t, y_fde122(5,:), '--g', t, y_fde121(6,:), 'o-k', t, y_fde12(6,:), 'k', t, y_fde122(6,:), '-k', t, y_fde121(7,:), 'o-c', t, y_fde12(7,:), 'c', t, y_fde122(7,:), '--c');
+legend('S_C(t) \alpha=0.4',  'S_C(t) \alpha=0.8', 'S_H(t) \alpha=0.4', 'S_H(t) \alpha=0.8', 'I_C(t) \alpha=0.4', 'I_C(t) \alpha=0.6', 'I_C(t) \alpha=0.8', 'I_H(t) \alpha=0.4', 'I_H(t) \alpha=0.6', 'I_H(t) \alpha=0.8', 'T_A_1(t) \alpha=0.4', 'T_A_1(t) \alpha=0.6', 'T_A_1(t) \alpha=0.8', 'T_A_2(t) \alpha=0.4', 'T_A_2(t) \alpha=0.6', 'T_A_2(t) \alpha=0.8', 'R(t) \alpha=0.4', 'R(t) \alpha=0.6', 'R(t) \alpha=0.8');
+xlabel('Time (weeks)');
+ylabel('Population');
+
+% Figure 2: Hospital-Acquired Infections
+figure(2)
+hospital_infections = y_fde12(4,:) + y_fde122(4,:);
+plot(t, hospital_infections, 'b');
+title('Hospital-Acquired Infections');
+xlabel('Time');
+ylabel('Number of Infections');
+
+% Figure 3: Community-Acquired Infections
+figure(3)
+community_infections = y_fde12(3,:) + y_fde122(3,:);
+plot(t, community_infections, 'r');
+title('Community-Acquired Infections');
+xlabel('Time');
+ylabel('Number of Infections');
+
+% Figure 4: Treatment Efficacy
+figure(4)
+treatment_A1 = y_fde12(5,:) + y_fde121(5,:);
+treatment_A2 = y_fde12(6,:) + y_fde121(6,:);
+treatment_efficacy = treatment_A2 ./ (treatment_A1 + treatment_A2);
+plot(t, treatment_efficacy, 'g');
+title('Treatment Efficacy');
+xlabel('Time');
+ylabel('Efficacy');
+% Figure 5: Total Infected Population
+figure(5)
+total_infected = y_fde12(3,:) + y_fde122(3,:) + y_fde12(4,:) + y_fde122(4,:);
+plot(t, total_infected, 'm');
+title('Total Infected Population');
+xlabel('Time');
+ylabel('Number of Infected Individuals');
+
+% Figure 6: Hospital Occupancy
+figure(6)
+hospital_occupancy = y_fde12(4,:) + y_fde122(4,:) + y_fde12(5,:) + y_fde122(5,:) + y_fde12(6,:) + y_fde122(6,:);
+plot(t, hospital_occupancy, 'y');
+title('Hospital Occupancy');
+xlabel('Time');
+ylabel('Number of Individuals');
+
+% Figure 7: Effective Reproduction Number
+figure(7)
+effective_R = (beta_1 * (y_fde12(4,:) + y_fde122(4,:)) + beta_2 * (y_fde12(3,:) + y_fde122(3,:))) ./ (mu + d);
+plot(t, effective_R, 'k');
+title('Effective Reproduction Number');
+xlabel('Time');
+ylabel('R(t)');
+
+% Figure 8: Susceptible Population
+figure(8)
+susceptible = y_fde12(1,:) + y_fde122(1,:);
+plot(t, susceptible, 'c');
+title('Susceptible Population');
+xlabel('Time');
+ylabel('Number of Individuals');
+
+% Figure 9: Recovered Population
+figure(9)
+recovered = y_fde12(7,:) + y_fde122(7,:);
+plot(t, recovered, 'b');
+title('Recovered Population');
+xlabel('Time');
+ylabel('Number of Individuals');
+
+% Figure 10: Treatment Efficacy Comparison
+figure(10)
+treatment_A1 = y_fde12(5,:) + y_fde121(5,:);
+treatment_A2 = y_fde12(6,:) + y_fde121(6,:);
+plot(t, treatment_A1, 'b', t, treatment_A2, 'r');
+legend('Treatment A1', 'Treatment A2');
+title('Treatment Efficacy Comparison');
+xlabel('Time');
+ylabel('Number of Individuals');
+
+% Figure 11: Specific Reproduction Number and Reproduction Coefficient
+figure(11)
+specific_R = effective_R ./ (mu + d);
+reproduction_coefficient = specific_R ./ (beta_1 + beta_2);
+plot(t, specific_R, 'm', t, reproduction_coefficient, 'b');
+legend('Specific R', 'Reproduction Coefficient');
+title('Specific Reproduction Number and Reproduction Coefficient');
+xlabel('Time');
+ylabel('Value');
+
+% Figure 15: Treatment Comparison and Thresholds
+figure(15)
+plot(t, y_fde12(5,:), 'b', t, y_fde12(6,:), 'r');
+hold on;
+threshold_A1 = k_1 * y_fde12(5,:) ./ ((mu + d) + e_1);
+threshold_A2 = k_2 * y_fde12(6,:) ./ ((mu + d) + e_2);
+plot(t, threshold_A1, '--b', t, threshold_A2, '--r');
+legend('Treatment A1', 'Treatment A2', 'Threshold A1', 'Threshold A2');
+title('Treatment Comparison and Thresholds');
+xlabel('Time');
+ylabel('Number of Individuals');
+hold off;
+
+% Data
+treatment_categories = {'Susceptible', 'Resistant'};
+aminoglycosides = [15, 5];
+carbapenems = [12, 8];
+
+% Bar plot
+figure;
+plot(1:numel(treatment_categories), [aminoglycosides; carbapenems]);
+
+% Set colors
+color_blue = [0, 0, 1]; % Blue color for aminoglycosides
+color_red = [1, 0, 0]; % Red color for carbapenems
+colormap([color_blue; color_red]);
+
+% Set legend
+legend('Aminoglycosides', 'Carbapenems');
+
+% Set axis labels
+xlabel('Treatment Category');
+ylabel('Number of Cases');
+
+% Set tick labels
+set(gca, 'XTick', 1:numel(treatment_categories));
+set(gca, 'XTickLabel', treatment_categories);
+
+% Rotate tick labels if needed
+xtickangle(45);
+
+% Display grid lines
+grid on;
+
+figure;
+plot([aminoglycosides; carbapenems]);
+colormap([color_blue; color_red]);
+legend('Aminoglycosides', 'Carbapenems');
+xlabel('Treatment Category');
+ylabel('Number of Cases');
+set(gca, 'XTick', 1:numel(treatment_categories));
+set(gca, 'XTickLabel', treatment_categories);
+xtickangle(45);
+grid on;
+
+figure;
+bar([aminoglycosides', carbapenems'], 'grouped');
+colormap([color_blue; color_red]);
+legend('Aminoglycosides', 'Carbapenems');
+xlabel('Treatment Category');
+ylabel('Number of Cases');
+set(gca, 'XTick', 1:numel(treatment_categories));
+set(gca, 'XTickLabel', treatment_categories);
+xtickangle(45);
+grid on;
+
+
